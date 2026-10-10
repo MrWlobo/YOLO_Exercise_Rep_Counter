@@ -1,8 +1,8 @@
 import cv2
-from ultralytics import YOLO
 from data_visualization.real_time_confidence_bars import RealTimeBarVisualizer
+from models.models import YOLOv8n_pretrained_model
 
-model = YOLO("yolov8n-pose.pt")
+model = YOLOv8n_pretrained_model
 
 stream_url = "http://localhost:4747/video"
 video_capture = cv2.VideoCapture(0, cv2.CAP_MSMF)
