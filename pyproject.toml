@@ -1,0 +1,20 @@
+[project]
+name = "yolo-exercise-rep-counter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "MrWlobo", email = "michaldworniczak40@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "opencv-contrib-python>=5.0.0.93",
+    "ultralytics>=8.4.175",
+]
+
+[project.scripts]
+yolo-exercise-rep-counter = "yolo_exercise_rep_counter:main"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
