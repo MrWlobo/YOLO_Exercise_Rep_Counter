@@ -1749,11 +1749,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "opencv-contrib-python" },
+    { name = "setuptools" },
     { name = "ultralytics" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "opencv-contrib-python", specifier = ">=5.0.0.93" },
+    { name = "setuptools", specifier = ">=84.0.0" },
     { name = "ultralytics", specifier = ">=8.4.175" },
 ]
