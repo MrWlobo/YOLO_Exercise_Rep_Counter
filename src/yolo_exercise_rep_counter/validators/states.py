@@ -1,0 +1,17 @@
+from enum import Enum
+
+
+class ExerciseState(str, Enum):
+    INITIAL = "INITIAL"
+    MOVING = "MOVING"
+    PEAK = "PEAK"
+    ERROR = "ERROR"
+
+
+class BicepCurlState(str, Enum):
+    INITIAL = "INITIAL"
+    MOVING_UP = "MOVING_UP"
+    MOVING_DOWN = "MOVING_DOWN"
+    PEAK = "PEAK"
+    SHOULDER_ELBOW_MISALIGNMENT = "SHOULDER_ELBOW_MISALIGNMENT"
+    HIPS_MISALIGNMENT = "HIPS_MISALIGNMENT"
