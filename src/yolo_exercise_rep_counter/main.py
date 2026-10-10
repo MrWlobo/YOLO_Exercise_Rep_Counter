@@ -3,11 +3,13 @@ from ultralytics import YOLO
 
 model = YOLO("yolov8n-pose.pt")
 
-video_capture = cv2.VideoCapture(0)
+stream_url = "http://localhost:4747/video"
+video_capture = cv2.VideoCapture(0, cv2.CAP_MSMF)
 
 while video_capture.isOpened():
     success, frame = video_capture.read()
     if not success:
+        print("ERROR: Could not read frame from stream")
         break
 
     results = model(frame, stream=True)
