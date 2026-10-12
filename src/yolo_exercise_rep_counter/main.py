@@ -19,7 +19,7 @@ while video_capture.isOpened():
         break
 
     frame = cv2.flip(frame, 1)
-    results = model(frame, stream=True)
+    results = model(frame, stream=True, verbose=False)
 
     for result in results:
         key_points = []
@@ -28,7 +28,8 @@ while video_capture.isOpened():
 
         annotated_frame = result.plot()
         visualizer.visualize_bars(key_points, annotated_frame)
-        bicep_curl_validator.check_constraints(key_points)
+        constraints_passed, details = bicep_curl_validator.check_constraints(key_points)
+        bicep_curl_validator.update_state(constraints_passed, details)
 
         cv2.imshow("YOLO-Pose Live Detection", annotated_frame)
 

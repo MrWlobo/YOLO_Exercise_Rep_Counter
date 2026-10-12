@@ -34,7 +34,7 @@ class ExerciseValidator(ABC):
         pass
 
     @abstractmethod
-    def update_state(self, constraints_passed, key_points_details):
+    def update_state(self, constraints_passed: bool, details: dict[str: float]):
         pass
 
 
@@ -45,10 +45,26 @@ class BicepCurlValidator(ExerciseValidator):
 
     def check_constraints(self, key_points):
         if key_points.size == 0:
-            return
+            return False, {}
 
         first_person_points = key_points[0]
+        constraints_passed = True
+        details = {}
+
+        # Constraints
+        # None for now
+
+        # Details
         elbow_angle = self._check_elbow_angle(first_person_points[6], first_person_points[8], first_person_points[10])
+        details["elbow_angle"] = elbow_angle
+
+        return constraints_passed, details
+
+    def update_state(self, constraints_passed, details):
+        if not constraints_passed:
+            return
+
+        elbow_angle = details["elbow_angle"]
 
         if elbow_angle is None:
             self.state = BicepCurlState.UNDETECTED
@@ -65,9 +81,6 @@ class BicepCurlValidator(ExerciseValidator):
         self.previous_frame_elbow_angle = elbow_angle
 
         print(self.state)
-
-    def update_state(self, constraints_passed, key_points_details):
-        pass
 
     def _check_elbow_angle(self, shoulder_point, elbow_point, wrist_point):
         if (shoulder_point[2] < self.required_confidence
