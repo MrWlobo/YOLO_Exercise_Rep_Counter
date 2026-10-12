@@ -1,5 +1,6 @@
 import cv2
 from data_visualization.real_time_confidence_bars import RealTimeBarVisualizer
+from validators.validators import BicepCurlValidator
 from models.models import YOLOv8n_pretrained_model
 
 model = YOLOv8n_pretrained_model
@@ -8,6 +9,8 @@ stream_url = "http://localhost:4747/video"
 video_capture = cv2.VideoCapture(0, cv2.CAP_MSMF)
 
 visualizer = RealTimeBarVisualizer(list(range(5, 11)))
+
+bicep_curl_validator = BicepCurlValidator()
 
 while video_capture.isOpened():
     success, frame = video_capture.read()
@@ -25,6 +28,7 @@ while video_capture.isOpened():
 
         annotated_frame = result.plot()
         visualizer.visualize_bars(key_points, annotated_frame)
+        bicep_curl_validator.check_constraints(key_points)
 
         cv2.imshow("YOLO-Pose Live Detection", annotated_frame)
 

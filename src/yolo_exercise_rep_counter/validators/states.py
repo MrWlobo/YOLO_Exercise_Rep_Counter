@@ -5,6 +5,7 @@ class ExerciseState(str, Enum):
     INITIAL = "INITIAL"
     MOVING = "MOVING"
     PEAK = "PEAK"
+    BAD_FORM = "BAD_FORM"
     ERROR = "ERROR"
 
 
