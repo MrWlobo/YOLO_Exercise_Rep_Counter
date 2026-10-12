@@ -8,9 +8,9 @@ model = YOLOv8n_pretrained_model
 stream_url = "http://localhost:4747/video"
 video_capture = cv2.VideoCapture(0, cv2.CAP_MSMF)
 
-visualizer = RealTimeBarVisualizer(list(range(5, 11)))
+visualizer = RealTimeBarVisualizer(list(range(5, 13)), bar_width=50, text_scale=0.4, width_padding=10)
 
-bicep_curl_validator = BicepCurlValidator()
+bicep_curl_validator = BicepCurlValidator(required_confidence=0.5)
 
 while video_capture.isOpened():
     success, frame = video_capture.read()

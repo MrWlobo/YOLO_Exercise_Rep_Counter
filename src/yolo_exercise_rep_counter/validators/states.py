@@ -5,13 +5,14 @@ class ExerciseState(str, Enum):
     INITIAL = "INITIAL"
     MOVING = "MOVING"
     PEAK = "PEAK"
-    BAD_FORM = "BAD_FORM"
+    BAD_FORM = "BAD FORM"
     ERROR = "ERROR"
 
 
 class BicepCurlState(str, Enum):
+    UNDETECTED = "UNDETECTED"
     INITIAL = "INITIAL"
-    MOVING_UP = "MOVING_UP"
+    MOVING_UP = "MOVING UP"
     MOVING_DOWN = "MOVING_DOWN"
     PEAK = "PEAK"
     SHOULDER_ELBOW_MISALIGNMENT = "SHOULDER_ELBOW_MISALIGNMENT"
