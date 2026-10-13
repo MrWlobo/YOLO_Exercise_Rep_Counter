@@ -24,9 +24,12 @@ coco_key_points = {
 
 
 class ExerciseValidator(ABC):
-    def __init__(self, state=ExerciseState.INITIAL, required_confidence=0.6):
+    def __init__(self, state=ExerciseState.INITIAL, required_confidence=0.6, min_phase_length=3):
         self.state = state
         self.required_confidence = required_confidence
+        self.min_phase_length = min_phase_length
+        self.last_moves = []
+        self.continuous_phases = []
         self.rep_count = 0
 
     @abstractmethod
@@ -39,8 +42,8 @@ class ExerciseValidator(ABC):
 
 
 class BicepCurlValidator(ExerciseValidator):
-    def __init__(self, state=BicepCurlState.UNDETECTED, required_confidence=0.6):
-        super().__init__(state, required_confidence)
+    def __init__(self, state=BicepCurlState.UNDETECTED, required_confidence=0.6, min_phase_length=3):
+        super().__init__(state, required_confidence, min_phase_length)
         self.previous_frame_elbow_angle = None
 
     def check_constraints(self, key_points):
@@ -66,6 +69,7 @@ class BicepCurlValidator(ExerciseValidator):
 
         elbow_angle = details["elbow_angle"]
 
+        # Update state
         if elbow_angle is None:
             self.state = BicepCurlState.UNDETECTED
         elif elbow_angle >= 150:
@@ -78,9 +82,22 @@ class BicepCurlValidator(ExerciseValidator):
         if elbow_angle and elbow_angle <= 40:
             self.state = BicepCurlState.PEAK
 
+        # Update previous angle
         self.previous_frame_elbow_angle = elbow_angle
 
-        print(self.state)
+        # Update phase lists
+
+        # Last moves (of length min_phase or less) is the last states read by the model. We use a window instead
+        # of single values to deal with potential mismatches between what the model sees and what is actually happening.
+        # (e.g. a single MOVING DOWN between many MOVING UP is likely a system's inaccuracy)
+        if len(self.last_moves) == self.min_phase_length:
+            self.last_moves.pop(0)
+        self.last_moves.append(self.state)
+
+        # If at least min_phase_length of last registered states are the same, we consider them an actual
+        # output, not an error.
+        if len(self.last_moves) == self.min_phase_length and len(set(self.last_moves)) == 1 and self.continuous_phases[-1] != self.state:
+            self.continuous_phases.append(self.state)
 
     def _check_elbow_angle(self, shoulder_point, elbow_point, wrist_point):
         if (shoulder_point[2] < self.required_confidence
