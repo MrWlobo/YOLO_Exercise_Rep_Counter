@@ -45,6 +45,10 @@ class BicepCurlValidator(ExerciseValidator):
     def __init__(self, state=BicepCurlState.UNDETECTED, required_confidence=0.6, min_phase_length=3):
         super().__init__(state, required_confidence, min_phase_length)
         self.previous_frame_elbow_angle = None
+        self.proper_exercise_pattern = [BicepCurlState.INITIAL,
+                                        BicepCurlState.MOVING_UP,
+                                        BicepCurlState.PEAK,
+                                        BicepCurlState.MOVING_DOWN]
 
     def check_constraints(self, key_points):
         if key_points.size == 0:
@@ -90,15 +94,27 @@ class BicepCurlValidator(ExerciseValidator):
         # Last moves (of length min_phase or less) is the last states read by the model. We use a window instead
         # of single values to deal with potential mismatches between what the model sees and what is actually happening.
         # (e.g. a single MOVING DOWN between many MOVING UP is likely a system's inaccuracy)
-        if len(self.last_moves) == self.min_phase_length:
+
+        last_moves_filled = len(self.last_moves) == self.min_phase_length
+
+        if last_moves_filled:
             self.last_moves.pop(0)
         self.last_moves.append(self.state)
 
         # If at least min_phase_length of last registered states are the same, we consider them an actual
         # output, not an error.
-        if len(self.last_moves) == self.min_phase_length and len(set(self.last_moves)) == 1 and self.continuous_phases[-1] != self.state:
+
+        last_moves_has_one_state_value = len(set(self.last_moves)) == 1
+        current_state_not_logged = len(self.continuous_phases) == 0 or self.continuous_phases[-1] != self.state
+
+        if last_moves_filled and last_moves_has_one_state_value and current_state_not_logged:
             self.continuous_phases.append(self.state)
 
+        if len(self.continuous_phases) >= len(self.proper_exercise_pattern) and self.continuous_phases[-len(self.proper_exercise_pattern)] == self.proper_exercise_pattern:
+            self.rep_count += 1
+            print(f"REP\nCurrent reps: {self.rep_count}")
+
+    # Below funtions to be moved to utils later
     def _check_elbow_angle(self, shoulder_point, elbow_point, wrist_point):
         if (shoulder_point[2] < self.required_confidence
                 or elbow_point[2] < self.required_confidence
