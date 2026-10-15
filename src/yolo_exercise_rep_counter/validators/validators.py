@@ -48,7 +48,8 @@ class BicepCurlValidator(ExerciseValidator):
         self.proper_exercise_pattern = [BicepCurlState.INITIAL,
                                         BicepCurlState.MOVING_UP,
                                         BicepCurlState.PEAK,
-                                        BicepCurlState.MOVING_DOWN]
+                                        BicepCurlState.MOVING_DOWN,
+                                        BicepCurlState.INITIAL]
 
     def check_constraints(self, key_points):
         if key_points.size == 0:
@@ -80,10 +81,10 @@ class BicepCurlValidator(ExerciseValidator):
             self.state = BicepCurlState.INITIAL
         elif elbow_angle < 150 and self.previous_frame_elbow_angle and elbow_angle < self.previous_frame_elbow_angle:
             self.state = BicepCurlState.MOVING_UP
-        elif elbow_angle > 40 and self.previous_frame_elbow_angle and elbow_angle > self.previous_frame_elbow_angle:
+        elif elbow_angle > 45 and self.previous_frame_elbow_angle and elbow_angle > self.previous_frame_elbow_angle:
             self.state = BicepCurlState.MOVING_DOWN
 
-        if elbow_angle and elbow_angle <= 40:
+        if elbow_angle and elbow_angle <= 45:
             self.state = BicepCurlState.PEAK
 
         # Update previous angle
@@ -110,9 +111,18 @@ class BicepCurlValidator(ExerciseValidator):
         if last_moves_filled and last_moves_has_one_state_value and current_state_not_logged:
             self.continuous_phases.append(self.state)
 
-        if len(self.continuous_phases) >= len(self.proper_exercise_pattern) and self.continuous_phases[-len(self.proper_exercise_pattern)] == self.proper_exercise_pattern:
+        # If there were enough distinct phases registered, a match is ran to determine whether the exercise has
+        # been performed correctly. If that is the case, a repetition is counted.
+
+        enough_distinct_phases = len(self.continuous_phases) >= len(self.proper_exercise_pattern)
+        latest_phases_match_exercise_pattern = are_same_states(
+            self.continuous_phases[-len(self.proper_exercise_pattern):],
+            self.proper_exercise_pattern)
+
+        if enough_distinct_phases and latest_phases_match_exercise_pattern:
             self.rep_count += 1
             print(f"REP\nCurrent reps: {self.rep_count}")
+            self.continuous_phases.clear()
 
     # Below funtions to be moved to utils later
     def _check_elbow_angle(self, shoulder_point, elbow_point, wrist_point):
@@ -150,3 +160,16 @@ class BicepCurlValidator(ExerciseValidator):
         angle_deg = np.degrees(angle_rad)
 
         return angle_deg
+
+
+def are_same_states(state_list_a, state_list_b) -> bool:
+    result = True
+
+    if len(state_list_a) != len(state_list_b):
+        result = False
+
+    if result:
+        for state_a, state_b in zip(state_list_a, state_list_b):
+            result = state_a.name == state_b.name
+
+    return result
