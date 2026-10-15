@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .states import ExerciseState, BicepCurlState
-import numpy as np
+from yolo_exercise_rep_counter.utils.utils import calculate_angle, are_same_states
 
 coco_key_points = {
     0: "Nose",
@@ -63,7 +63,11 @@ class BicepCurlValidator(ExerciseValidator):
         # None for now
 
         # Details
-        elbow_angle = self._check_elbow_angle(first_person_points[6], first_person_points[8], first_person_points[10])
+        elbow_angle = calculate_angle(first_person_points[6],
+                                      first_person_points[8],
+                                      first_person_points[10],
+                                      self.required_confidence)
+
         details["elbow_angle"] = elbow_angle
 
         return constraints_passed, details
@@ -123,53 +127,3 @@ class BicepCurlValidator(ExerciseValidator):
             self.rep_count += 1
             print(f"REP\nCurrent reps: {self.rep_count}")
             self.continuous_phases.clear()
-
-    # Below funtions to be moved to utils later
-    def _check_elbow_angle(self, shoulder_point, elbow_point, wrist_point):
-        if (shoulder_point[2] < self.required_confidence
-                or elbow_point[2] < self.required_confidence
-                or wrist_point[2] < self.required_confidence):
-            return None
-
-        # Get X and Y coordinates of points
-        shoulder = np.array(shoulder_point[:2])
-        elbow = np.array(elbow_point[:2])
-        wrist = np.array(wrist_point[:2])
-
-        # Create vectors outgoing from "elbow" point
-        elbow_shoulder_vector = shoulder - elbow
-        elbow_wrist_vector = wrist - elbow
-
-        # Calculate dot product of vectors and their magnitudes
-        # Dot product: BA * BC = (BA_x * BC_x) + (BA_y * BC_y)
-        dot_product = np.dot(elbow_shoulder_vector, elbow_wrist_vector)
-        magnitude_elbow_shoulder_vector = np.linalg.norm(elbow_shoulder_vector)
-        magnitude_elbow_wrist_vector = np.linalg.norm(elbow_wrist_vector)
-
-        # Since BA * BC = ||BA|| * ||BC|| * cos(t), where || are magnitudes of vectors and
-        # cos(t) is the cosine of the angle between them, then having the values of all
-        # variables except t, we can calculate it.
-
-        if magnitude_elbow_shoulder_vector == 0 or magnitude_elbow_wrist_vector == 0:
-            return 0.0
-
-        cosine_angle = np.clip(dot_product / (magnitude_elbow_shoulder_vector * magnitude_elbow_wrist_vector), -1.0, 1.0)
-
-        # Get the angle in degrees
-        angle_rad = np.arccos(cosine_angle)
-        angle_deg = np.degrees(angle_rad)
-
-        return angle_deg
-
-
-def are_same_states(state_list_a, state_list_b) -> bool:
-    result = True
-
-    if len(state_list_a) != len(state_list_b):
-        result = False
-
-    if result:
-        for state_a, state_b in zip(state_list_a, state_list_b):
-            result = state_a.name == state_b.name
-
-    return result
