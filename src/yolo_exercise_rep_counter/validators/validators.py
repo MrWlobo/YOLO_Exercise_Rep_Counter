@@ -78,18 +78,30 @@ class BicepCurlValidator(ExerciseValidator):
 
         elbow_angle = details["elbow_angle"]
 
+        peak_angle = 45
+        bottom_angle = 140
+
         # Update state
         if elbow_angle is None:
             self.state = BicepCurlState.UNDETECTED
-        elif elbow_angle >= 150:
+
+        elif elbow_angle >= bottom_angle:
             self.state = BicepCurlState.INITIAL
-        elif elbow_angle < 150 and self.previous_frame_elbow_angle and elbow_angle < self.previous_frame_elbow_angle:
+
+        elif (elbow_angle < bottom_angle and
+              self.previous_frame_elbow_angle and
+              elbow_angle < self.previous_frame_elbow_angle):
             self.state = BicepCurlState.MOVING_UP
-        elif elbow_angle > 45 and self.previous_frame_elbow_angle and elbow_angle > self.previous_frame_elbow_angle:
+
+        elif (elbow_angle > peak_angle and
+              self.previous_frame_elbow_angle and
+              elbow_angle > self.previous_frame_elbow_angle):
             self.state = BicepCurlState.MOVING_DOWN
 
-        if elbow_angle and elbow_angle <= 45:
+        if elbow_angle and elbow_angle <= peak_angle:
             self.state = BicepCurlState.PEAK
+
+        print(self.state.value)
 
         # Update previous angle
         self.previous_frame_elbow_angle = elbow_angle
