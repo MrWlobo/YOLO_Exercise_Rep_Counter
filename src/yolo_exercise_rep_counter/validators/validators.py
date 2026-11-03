@@ -101,8 +101,6 @@ class BicepCurlValidator(ExerciseValidator):
         if elbow_angle and elbow_angle <= peak_angle:
             self.state = BicepCurlState.PEAK
 
-        print(self.state.value)
-
         # Update previous angle
         self.previous_frame_elbow_angle = elbow_angle
 

@@ -21,7 +21,7 @@ while video_capture.isOpened():
         break
 
     frame = cv2.flip(frame, 1)
-    results = model(frame, stream=True, verbose=False)
+    results = model(frame, imgsz=320, stream=True, verbose=False)
 
     for result in results:
         key_points = []
