@@ -10,7 +10,7 @@ stream_url = "http://localhost:4747/video"
 video_capture = cv2.VideoCapture(0, cv2.CAP_MSMF)
 
 bar_visualizer = RealTimeBarVisualizer(list(range(5, 13)), bar_width=50, text_scale=0.4, width_padding=10)
-exercise_highlight_visualizer = ExerciseHighlightVisualizer()
+exercise_highlight_visualizer = ExerciseHighlightVisualizer("ARMS")
 
 bicep_curl_validator = BicepCurlValidator(required_confidence=0.5, min_phase_length=2)
 
