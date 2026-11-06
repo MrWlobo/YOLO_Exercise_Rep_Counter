@@ -14,7 +14,7 @@ bar_visualizer = RealTimeBarVisualizer(list(range(5, 13)), bar_width=50, text_sc
 exercise_highlight_visualizer = ExerciseHighlightVisualizer([HighlightType.ARMS])
 exercise_info_visualizer = ExerciseInfoVisualizer()
 
-bicep_curl_validator = BicepCurlValidator(required_confidence=0.5, min_phase_length=2)
+bicep_curl_validator = BicepCurlValidator(required_confidence=0.5, min_phase_length=2, arm="left")
 
 while video_capture.isOpened():
     success, frame = video_capture.read()
@@ -34,13 +34,12 @@ while video_capture.isOpened():
 
         if len(key_points) > 0:
             person_key_points = key_points[0]
-
-            exercise_info_visualizer.visualize_name(annotated_frame, "Bicep Curl")
             exercise_highlight_visualizer.draw_highlights(person_key_points, annotated_frame)
 
-        # visualizer.visualize_bars(key_points, annotated_frame)
         constraints_passed, details = bicep_curl_validator.check_constraints(key_points)
         state, rep_count = bicep_curl_validator.update_state(constraints_passed, details)
+
+        exercise_info_visualizer.visualize_name(annotated_frame, "Bicep Curl")
         if state:
             exercise_info_visualizer.visualize_phase(annotated_frame, state.value.replace("_", " "))
         exercise_info_visualizer.visualize_rep_count(annotated_frame, rep_count)

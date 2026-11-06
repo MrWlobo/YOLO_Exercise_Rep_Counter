@@ -42,7 +42,7 @@ class ExerciseValidator(ABC):
 
 
 class BicepCurlValidator(ExerciseValidator):
-    def __init__(self, state=BicepCurlState.UNDETECTED, required_confidence=0.6, min_phase_length=3):
+    def __init__(self, state=BicepCurlState.UNDETECTED, required_confidence=0.6, min_phase_length=3, arm="right"):
         super().__init__(state, required_confidence, min_phase_length)
         self.previous_frame_elbow_angle = None
         self.proper_exercise_pattern = [BicepCurlState.INITIAL,
@@ -50,6 +50,7 @@ class BicepCurlValidator(ExerciseValidator):
                                         BicepCurlState.PEAK,
                                         BicepCurlState.MOVING_DOWN,
                                         BicepCurlState.INITIAL]
+        self.arm = arm
 
     def check_constraints(self, key_points):
         if key_points.size == 0:
@@ -59,14 +60,18 @@ class BicepCurlValidator(ExerciseValidator):
         constraints_passed = True
         details = {}
 
-        # Constraints
-        # None for now
-
-        # Details
-        elbow_angle = calculate_angle(first_person_points[6],
-                                      first_person_points[8],
-                                      first_person_points[10],
-                                      self.required_confidence)
+        if self.arm == "right":
+            elbow_angle = calculate_angle(first_person_points[6],
+                                          first_person_points[8],
+                                          first_person_points[10],
+                                          self.required_confidence)
+        elif self.arm == "left":
+            elbow_angle = calculate_angle(first_person_points[5],
+                                          first_person_points[7],
+                                          first_person_points[9],
+                                          self.required_confidence)
+        else:
+            elbow_angle = 0
 
         details["elbow_angle"] = elbow_angle
 
