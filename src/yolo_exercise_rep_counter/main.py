@@ -1,7 +1,7 @@
 import cv2
-from data_visualization.real_time_confidence_bars import RealTimeBarVisualizer
-from data_visualization.exercise_highlight import ExerciseHighlightVisualizer, HighlightType
-from data_visualization.exercise_info import ExerciseInfoVisualizer
+from visualization.real_time_confidence_bars import RealTimeBarVisualizer
+from visualization.exercise_highlight import ExerciseHighlightVisualizer, HighlightType
+from visualization.exercise_info import ExerciseInfoVisualizer
 from validators.validators import BicepCurlValidator
 from models.models import YOLOv8n_pretrained_model
 
