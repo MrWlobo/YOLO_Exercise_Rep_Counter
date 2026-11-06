@@ -72,9 +72,9 @@ class BicepCurlValidator(ExerciseValidator):
 
         return constraints_passed, details
 
-    def update_state(self, constraints_passed, details) -> BicepCurlState | None:
+    def update_state(self, constraints_passed, details) -> tuple[BicepCurlState | None, int]:
         if not constraints_passed:
-            return None
+            return None, self.rep_count
 
         elbow_angle = details["elbow_angle"]
 
@@ -136,7 +136,6 @@ class BicepCurlValidator(ExerciseValidator):
 
         if enough_distinct_phases and latest_phases_match_exercise_pattern:
             self.rep_count += 1
-            print(f"REP\nCurrent reps: {self.rep_count}")
             self.continuous_phases.clear()
 
-        return self.last_moves[-1] if self.last_moves else None
+        return (self.last_moves[-1], self.rep_count) if self.last_moves else (None, self.rep_count)
