@@ -1,6 +1,7 @@
 import cv2
 from data_visualization.real_time_confidence_bars import RealTimeBarVisualizer
 from data_visualization.exercise_highlight import ExerciseHighlightVisualizer, HighlightType
+from data_visualization.exercise_info import ExerciseInfoVisualizer
 from validators.validators import BicepCurlValidator
 from models.models import YOLOv8n_pretrained_model
 
@@ -11,6 +12,7 @@ video_capture = cv2.VideoCapture(0, cv2.CAP_MSMF)
 
 bar_visualizer = RealTimeBarVisualizer(list(range(5, 13)), bar_width=50, text_scale=0.4, width_padding=10)
 exercise_highlight_visualizer = ExerciseHighlightVisualizer([HighlightType.ARMS])
+exercise_info_visualizer = ExerciseInfoVisualizer()
 
 bicep_curl_validator = BicepCurlValidator(required_confidence=0.5, min_phase_length=2)
 
@@ -31,36 +33,16 @@ while video_capture.isOpened():
         annotated_frame = frame.copy()
 
         if len(key_points) > 0:
-            person_kpts = key_points[0]
+            person_key_points = key_points[0]
 
-            cv2.putText(
-                annotated_frame,
-                "BICEP CURL",
-                (30, 50),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 255, 0),
-                2,
-                cv2.LINE_AA
-            )
+            exercise_info_visualizer.visualize_name(annotated_frame, "Bicep Curl")
+            exercise_highlight_visualizer.draw_highlights(person_key_points, annotated_frame)
 
-            exercise_highlight_visualizer.draw_highlights(person_kpts, annotated_frame)
-
-        #visualizer.visualize_bars(key_points, annotated_frame)
+        # visualizer.visualize_bars(key_points, annotated_frame)
         constraints_passed, details = bicep_curl_validator.check_constraints(key_points)
         state = bicep_curl_validator.update_state(constraints_passed, details)
-
         if state:
-            cv2.putText(
-                annotated_frame,
-                state.value.replace("_", " "),
-                (30, 100),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1.0,
-                (0, 255, 0),
-                2,
-                cv2.LINE_AA
-            )
+            exercise_info_visualizer.visualize_phase(annotated_frame, state.value.replace("_", " "))
 
         cv2.imshow("YOLO-Pose Live Detection", annotated_frame)
 
