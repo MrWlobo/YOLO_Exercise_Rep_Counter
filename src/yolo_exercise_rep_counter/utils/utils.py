@@ -45,9 +45,10 @@ def are_same_states(state_list_a, state_list_b) -> bool:
 
     if len(state_list_a) != len(state_list_b):
         result = False
-
     if result:
         for state_a, state_b in zip(state_list_a, state_list_b):
             result = state_a.name == state_b.name
+            if not result:
+                break
 
     return result

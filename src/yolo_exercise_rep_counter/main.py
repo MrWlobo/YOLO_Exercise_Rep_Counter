@@ -48,7 +48,19 @@ while video_capture.isOpened():
 
         #visualizer.visualize_bars(key_points, annotated_frame)
         constraints_passed, details = bicep_curl_validator.check_constraints(key_points)
-        bicep_curl_validator.update_state(constraints_passed, details)
+        state = bicep_curl_validator.update_state(constraints_passed, details)
+
+        if state:
+            cv2.putText(
+                annotated_frame,
+                state.value.replace("_", " "),
+                (30, 100),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.0,
+                (0, 255, 0),
+                2,
+                cv2.LINE_AA
+            )
 
         cv2.imshow("YOLO-Pose Live Detection", annotated_frame)
 
