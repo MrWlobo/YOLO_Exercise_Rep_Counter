@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .states import ExerciseState, BicepCurlState
-from yolo_exercise_rep_counter.utils.utils import calculate_angle, are_same_states, x_axis_offset
+from yolo_exercise_rep_counter.utils.utils import calculate_angle, are_same_states, x_axis_offset, average_confidence
 
 coco_key_points = {
     0: "Nose",
@@ -61,21 +61,26 @@ class BicepCurlValidator(ExerciseValidator):
         details = {}
 
         arm_joints = [6, 8, 10] if self.arm == "right" else [5, 7, 9]
-        elbow_angle = calculate_angle(first_person_points[arm_joints[0]],
-                                      first_person_points[arm_joints[1]],
-                                      first_person_points[arm_joints[2]],
-                                      self.required_confidence)
+        selected_key_points = [
+            first_person_points[arm_joints[0]],
+            first_person_points[arm_joints[1]],
+            first_person_points[arm_joints[2]],
+        ]
+
+        elbow_angle = calculate_angle(*selected_key_points, self.required_confidence)
 
         details["elbow_angle"] = elbow_angle
         details["shoulder_elbow_offset"] = x_axis_offset(first_person_points[arm_joints[0]],
                                                          first_person_points[arm_joints[1]],
                                                          self.required_confidence)
 
+        details["average_confidence"] = average_confidence(selected_key_points)
+
         return constraints_passed, details
 
-    def update_state(self, constraints_passed, details) -> tuple[BicepCurlState | None, int]:
+    def update_state(self, constraints_passed, details) -> tuple[BicepCurlState, int]:
         if not constraints_passed:
-            return None, self.rep_count
+            return BicepCurlState.UNDETECTED, self.rep_count
 
         elbow_angle = details["elbow_angle"]
         shoulder_elbow_offset = details["shoulder_elbow_offset"] or 0

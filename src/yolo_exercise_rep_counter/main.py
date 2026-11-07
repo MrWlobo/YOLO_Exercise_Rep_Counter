@@ -12,9 +12,12 @@ video_capture = cv2.VideoCapture(0, cv2.CAP_MSMF)
 
 bar_visualizer = RealTimeBarVisualizer(list(range(5, 13)), bar_width=50, text_scale=0.4, width_padding=10)
 exercise_highlight_visualizer = ExerciseHighlightVisualizer([HighlightType.ARMS])
-exercise_info_visualizer = ExerciseInfoVisualizer()
 
-bicep_curl_validator = BicepCurlValidator(required_confidence=0.5, min_phase_length=2, arm="left")
+exercise_info_visualizer_left = ExerciseInfoVisualizer()
+exercise_info_visualizer_right = ExerciseInfoVisualizer(phase_position=(400, 100), rep_counter_position=(400, 150))
+
+bicep_curl_validator_left = BicepCurlValidator(required_confidence=0.5, min_phase_length=2, arm="left")
+bicep_curl_validator_right = BicepCurlValidator(required_confidence=0.5, min_phase_length=2, arm="right")
 
 while video_capture.isOpened():
     success, frame = video_capture.read()
@@ -36,13 +39,19 @@ while video_capture.isOpened():
             person_key_points = key_points[0]
             exercise_highlight_visualizer.draw_highlights(person_key_points, annotated_frame)
 
-        constraints_passed, details = bicep_curl_validator.check_constraints(key_points)
-        state, rep_count = bicep_curl_validator.update_state(constraints_passed, details)
+        constraints_passed_left, details_left = bicep_curl_validator_left.check_constraints(key_points)
+        constraints_passed_right, details_right = bicep_curl_validator_right.check_constraints(key_points)
 
-        exercise_info_visualizer.visualize_name(annotated_frame, "Bicep Curl")
-        if state:
-            exercise_info_visualizer.visualize_phase(annotated_frame, state.value.replace("_", " "))
-        exercise_info_visualizer.visualize_rep_count(annotated_frame, rep_count)
+        exercise_info_visualizer_left.visualize_name(annotated_frame, "Bicep Curl")
+
+        if details_left.get("average_confidence", 0.0) > details_right.get("average_confidence", 0.0):
+            state, rep_count = bicep_curl_validator_left.update_state(constraints_passed_left, details_left)
+            exercise_info_visualizer_left.visualize_phase(annotated_frame, state.value.replace("_", " "))
+            exercise_info_visualizer_left.visualize_rep_count(annotated_frame, rep_count)
+        else:
+            state, rep_count = bicep_curl_validator_right.update_state(constraints_passed_right, details_right)
+            exercise_info_visualizer_right.visualize_phase(annotated_frame, state.value.replace("_", " "))
+            exercise_info_visualizer_right.visualize_rep_count(annotated_frame, rep_count)
 
         cv2.imshow("YOLO-Pose Live Detection", annotated_frame)
 

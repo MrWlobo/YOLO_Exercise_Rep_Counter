@@ -39,18 +39,25 @@ def calculate_angle(a, b, c, required_confidence):
     return angle_deg
 
 
-def x_axis_offset(a, b, required_confidence):
+# Calculate the difference in x coordinates of points a and b
+def x_axis_offset(a, b, required_confidence) -> float:
     if a[2] < required_confidence or b[2] < required_confidence:
-        return None
+        return 0.0
 
     return a[0] - b[0]
 
 
-def y_axis_offset(a, b, required_confidence):
+# Calculate the difference in y coordinates of points a and b
+def y_axis_offset(a, b, required_confidence) -> float:
     if a[2] < required_confidence or b[2] < required_confidence:
-        return None
+        return 0.0
 
     return a[1] - b[1]
+
+
+# Return the average confidence of given key points
+def average_confidence(points) -> float:
+    return sum([point[2] for point in points]) / len(points)
 
 
 # Checks if two lists of exercise states contain the same sequence
