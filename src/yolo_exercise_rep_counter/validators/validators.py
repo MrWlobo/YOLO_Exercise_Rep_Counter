@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from .states import ExerciseState, BicepCurlState
-from yolo_exercise_rep_counter.utils.utils import calculate_angle, are_same_states
+from yolo_exercise_rep_counter.utils.utils import calculate_angle, are_same_states, x_axis_offset
 
 coco_key_points = {
     0: "Nose",
@@ -60,20 +60,16 @@ class BicepCurlValidator(ExerciseValidator):
         constraints_passed = True
         details = {}
 
-        if self.arm == "right":
-            elbow_angle = calculate_angle(first_person_points[6],
-                                          first_person_points[8],
-                                          first_person_points[10],
-                                          self.required_confidence)
-        elif self.arm == "left":
-            elbow_angle = calculate_angle(first_person_points[5],
-                                          first_person_points[7],
-                                          first_person_points[9],
-                                          self.required_confidence)
-        else:
-            elbow_angle = 0
+        arm_joints = [6, 8, 10] if self.arm == "right" else [5, 7, 9]
+        elbow_angle = calculate_angle(first_person_points[arm_joints[0]],
+                                      first_person_points[arm_joints[1]],
+                                      first_person_points[arm_joints[2]],
+                                      self.required_confidence)
 
         details["elbow_angle"] = elbow_angle
+        details["shoulder_elbow_offset"] = x_axis_offset(first_person_points[arm_joints[0]],
+                                                         first_person_points[arm_joints[1]],
+                                                         self.required_confidence)
 
         return constraints_passed, details
 
@@ -82,9 +78,11 @@ class BicepCurlValidator(ExerciseValidator):
             return None, self.rep_count
 
         elbow_angle = details["elbow_angle"]
+        shoulder_elbow_offset = details["shoulder_elbow_offset"] or 0
 
         peak_angle = 45
         bottom_angle = 140
+        acceptable_shoulder_elbow_offset = 40
 
         # Update state
         if elbow_angle is None:
@@ -105,6 +103,9 @@ class BicepCurlValidator(ExerciseValidator):
 
         if elbow_angle and elbow_angle <= peak_angle:
             self.state = BicepCurlState.PEAK
+
+        if acceptable_shoulder_elbow_offset < abs(shoulder_elbow_offset):
+            self.state = BicepCurlState.SHOULDER_ELBOW_MISALIGNMENT
 
         # Update previous angle
         self.previous_frame_elbow_angle = elbow_angle

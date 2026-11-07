@@ -39,6 +39,20 @@ def calculate_angle(a, b, c, required_confidence):
     return angle_deg
 
 
+def x_axis_offset(a, b, required_confidence):
+    if a[2] < required_confidence or b[2] < required_confidence:
+        return None
+
+    return a[0] - b[0]
+
+
+def y_axis_offset(a, b, required_confidence):
+    if a[2] < required_confidence or b[2] < required_confidence:
+        return None
+
+    return a[1] - b[1]
+
+
 # Checks if two lists of exercise states contain the same sequence
 def are_same_states(state_list_a, state_list_b) -> bool:
     result = True
